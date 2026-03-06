@@ -81,6 +81,14 @@ const CategoriesPage: React.FC = () => {
     flexShrink: 0,
   };
 
+  const subHeadingStyle: React.CSSProperties = {
+  fontSize: "20px",
+  fontWeight: 600,
+  color: COLORS.secondary.s08,
+  margin: 0,
+  flexShrink: 0,
+};
+
   const loadingStyle: React.CSSProperties = {
     display: "flex",
     justifyContent: "center",
@@ -100,19 +108,30 @@ const CategoriesPage: React.FC = () => {
           Add Category
         </Button>
       </div>
+      <h2 style={subHeadingStyle}>Create, Edit, and Delete Categories</h2>
+      <div>
+        {loading ? (
+          <div style={loadingStyle}>Loading...</div>
+        ) : (
+          <>
+            <CategoryTable
+              categories={categories}
+              onCategoryUpdated={getCategories}
+            />
 
-      <CategoryTable categories={categories} onCategoryUpdated={getCategories} />
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add new category"
-      >
-        <CategoryFrom
-          onSubmit={handleAddCategory}
-          onCancel={() => setIsModalOpen(false)}
-        ></CategoryFrom>
-      </Modal>
+            <Modal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              title="Add new category"
+            >
+              <CategoryFrom
+                onSubmit={handleAddCategory}
+                onCancel={() => setIsModalOpen(false)}
+              ></CategoryFrom>
+            </Modal>  
+          </>
+        )}
+      </div>
     </div>
   );
 };
