@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getExpenses, createExpense } from "../services/api";
-import { Expense, ExpenseFormData } from "../types";
+import { getExpenses, createExpense, fetchCategories } from "../services/api";
+import { Category, Expense, ExpenseFormData } from "../types";
 import YearNavigation from "../components/YearNavigation";
 import { MonthNavigation } from "../components/MonthNavigation";
 import CategoryBreakdown from "../components/CategoryBreakdown";
@@ -13,6 +13,7 @@ const HistoryPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [category, setCategories] = useState<Category[]>([]);
 
   // Get year and month from URL params, default to current date if not provided
   const getInitialYearMonth = () => {
@@ -52,8 +53,12 @@ const HistoryPage: React.FC = () => {
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      const data = await getExpenses(selectedYear, selectedMonth);
-      setExpenses(data);
+      const [expenseData, categoryData] = await Promise.all([
+        getExpenses(selectedYear,selectedMonth),
+        fetchCategories(),
+      ]);
+      setExpenses(expenseData);
+      setCategories(categoryData)
     } catch (error) {
       console.error("Error fetching expenses:", error);
     } finally {
@@ -97,8 +102,11 @@ const HistoryPage: React.FC = () => {
   );
 
   const categories = Object.values(categoryData).sort(
-    (a, b) => b.amount - a.amount,
-  );
+    (a, b) => b.amount - a.amount)
+    .map((cat) => ({
+      ...cat,
+      icon: category.find((c) => c.name === cat.category)?.icon ?? "",
+    }));
   const total = categories.reduce((sum, cat) => sum + cat.amount, 0);
   const totalCount = categories.reduce((sum, cat) => sum + cat.count, 0);
 
@@ -172,6 +180,7 @@ const HistoryPage: React.FC = () => {
             <div style={{ marginTop: "32px" }}>
               <CalendarExpenseTable
                 expenses={expenses}
+                categories={category}
                 onExpenseUpdated={fetchExpenses}
               />
             </div>
