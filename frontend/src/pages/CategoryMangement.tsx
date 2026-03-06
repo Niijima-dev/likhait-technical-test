@@ -1,24 +1,58 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button } from "../vibes";
 import { COLORS } from "../constants/colors";
-import {Category, CategoryFormData} from "../types";
+import { Category, CategoryFormData, Expense } from "../types";
 import { CategoryFrom } from "../components/CategoryForm";
-import { createCategory } from "../services/api";
-
+import {
+  createCategory,
+  fetchCategories,
+  fetchExpenses,
+  getExpenses,
+} from "../services/api";
+import { CategoryTable } from "../components/CategoryTable";
 
 const CategoriesPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddCategory = async (data: CategoryFormData) => {
-    try{
+    try {
       await createCategory(data);
       setIsModalOpen(false);
-    }catch(error){
+      getCategories();
+    } catch (error) {
       console.error("Error creating category: ", error);
       throw error;
     }
   };
+
+  const getCategories = async () => {
+    try {
+      setLoading(true);
+      const [expenseData, categoryData] = await Promise.all([
+        fetchExpenses(),
+        fetchCategories(),
+      ]);
+
+      const data = categoryData.map((category) => {
+        const count = expenseData.filter(
+          (e) => e.category === category.name,
+        ).length;
+        return { ...category, count };
+      });
+
+      setCategories(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getCategories();
+  }, []);
 
   const pageStyle: React.CSSProperties = {
     padding: "48px 64px",
@@ -56,8 +90,6 @@ const CategoriesPage: React.FC = () => {
     color: COLORS.secondary.s08,
   };
 
-
-  
   return (
     <div style={pageStyle}>
       <div style={headerStyle}>
@@ -69,20 +101,20 @@ const CategoriesPage: React.FC = () => {
         </Button>
       </div>
 
+      <CategoryTable categories={categories} onCategoryUpdated={getCategories} />
+
       <Modal
-      isOpen={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
-      title="Add new category"
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add new category"
       >
         <CategoryFrom
-        onSubmit={handleAddCategory}
-        onCancel={() => setIsModalOpen(false)}></CategoryFrom>
+          onSubmit={handleAddCategory}
+          onCancel={() => setIsModalOpen(false)}
+        ></CategoryFrom>
       </Modal>
     </div>
   );
-}
-
-
-
+};
 
 export default CategoriesPage;
