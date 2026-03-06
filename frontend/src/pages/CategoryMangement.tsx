@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button } from "../vibes";
 import { COLORS } from "../constants/colors";
-import { Category, CategoryFormData, Expense } from "../types";
+import { Category, CategoryFormData } from "../types";
 import { CategoryFrom } from "../components/CategoryForm";
 import {
   createCategory,
   fetchCategories,
   fetchExpenses,
-  getExpenses,
 } from "../services/api";
 import { CategoryTable } from "../components/CategoryTable";
 
@@ -82,12 +81,12 @@ const CategoriesPage: React.FC = () => {
   };
 
   const subHeadingStyle: React.CSSProperties = {
-  fontSize: "20px",
-  fontWeight: 600,
-  color: COLORS.secondary.s08,
-  margin: 0,
-  flexShrink: 0,
-};
+    fontSize: "20px",
+    fontWeight: 600,
+    color: COLORS.secondary.s08,
+    margin: 0,
+    flexShrink: 0,
+  };
 
   const loadingStyle: React.CSSProperties = {
     display: "flex",
@@ -128,7 +127,7 @@ const CategoriesPage: React.FC = () => {
                 onSubmit={handleAddCategory}
                 onCancel={() => setIsModalOpen(false)}
               ></CategoryFrom>
-            </Modal>  
+            </Modal>
           </>
         )}
       </div>
