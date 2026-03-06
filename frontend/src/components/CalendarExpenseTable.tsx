@@ -3,7 +3,7 @@
  */
 
 import React, { useState } from "react";
-import { Expense, ExpenseFormData } from "../types";
+import { Category, Expense, ExpenseFormData } from "../types";
 import { formatCurrency, formatDate } from "../utils/expenseUtils";
 import { getCategoryEmoji } from "../constants/categoryEmojis";
 import { COLORS } from "../constants/colors";
@@ -13,6 +13,7 @@ import { deleteExpense, updateExpense } from "../services/api";
 
 interface CalendarExpenseTableProps {
   expenses: Expense[];
+  categories: Category[];
   onExpenseUpdated: () => void;
 }
 
@@ -20,6 +21,7 @@ const ITEMS_PER_PAGE = 10;
 
 export function CalendarExpenseTable({
   expenses,
+  categories,
   onExpenseUpdated,
 }: CalendarExpenseTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,6 +34,11 @@ export function CalendarExpenseTable({
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentExpenses = expenses.slice(startIndex, endIndex);
+
+  const getCategoryIcon = (categoryName: string) => {
+    const match = categories.find((c) => c.name === categoryName);
+    return match?.icon ?? "📊";
+  };
 
   const handleEdit = (expense: Expense) => {
     setEditingExpense(expense);
@@ -142,7 +149,7 @@ export function CalendarExpenseTable({
                     gap: "0.5rem",
                   }}
                 >
-                  <span>{getCategoryEmoji(expense.category)}</span>
+                  <span>{getCategoryIcon(expense.category)}</span>
                   <span>{expense.category}</span>
                 </span>
               </td>
