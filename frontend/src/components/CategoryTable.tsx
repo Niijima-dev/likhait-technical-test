@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import { Category, CategoryFormData } from "../types";
-import { formatCurrency, formatDate } from "../utils/expenseUtils";
-import { getCategoryEmoji } from "../constants/categoryEmojis";
 import { COLORS } from "../constants/colors";
 import { Button, Modal, Pagination } from "../vibes";
-import { ExpenseForm } from "./ExpenseForm.tsx";
 import { deleteCategory, updateCategory } from "../services/api";
 import { CategoryFrom } from "./CategoryForm.tsx";
 
