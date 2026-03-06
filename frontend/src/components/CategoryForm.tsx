@@ -4,11 +4,11 @@ import { TextField, Button } from "../vibes";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { useCategoryForm } from "../hooks/useCategoriesForm";
 
-interface CategoryFormProps{
-    initialData?: Partial<CategoryFormData>;
-    onSubmit: (data: CategoryFormData) => Promise<void>;
-    onCancel?: () => void;
-    submitLabel?: string;
+interface CategoryFormProps {
+  initialData?: Partial<CategoryFormData>;
+  onSubmit: (data: CategoryFormData) => Promise<void>;
+  onCancel?: () => void;
+  submitLabel?: string;
 }
 
 export function CategoryFrom({
@@ -17,16 +17,16 @@ export function CategoryFrom({
   onCancel,
   submitLabel = "Add Category",
 }: CategoryFormProps) {
-  const {formData, errors, isSubmitting, handleChange, handleSubmit} = 
-  useCategoryForm({
-    initialData,
-    onSubmit,
-  });
+  const { formData, errors, isSubmitting, handleChange, handleSubmit } =
+    useCategoryForm({
+      initialData,
+      onSubmit,
+    });
 
   const [showPicker, setShowPicker] = useState(false);
 
   const handleIconClick = (iconData: EmojiClickData) => {
-    handleChange("icon", iconData.emoji)
+    handleChange("icon", iconData.emoji);
     setShowPicker(false);
   };
 
@@ -55,46 +55,50 @@ export function CategoryFrom({
         required
       />
 
-       <div style={{cursor: "pointer"}} 
-       onClick={() => setShowPicker(!showPicker)}>
-        <TextField
-          label="Icon"
-          type="text"
-          placeholder="Select Icon"
-          value={formData.icon}
-          readOnly
-          error={errors.icon}
-          fullWidth
-          required  
-        />
+      <div
+        style={{ cursor: "pointer", pointerEvents: "all" }}
+        onClick={() => setShowPicker(!showPicker)}
+      >
+        <div style={{ pointerEvents: "none" }}>
+          <TextField
+            label="Icon"
+            type="text"
+            placeholder="Select Icon"
+            value={formData.icon}
+            readOnly
+            error={errors.icon}
+            fullWidth
+            required
+          />
+        </div>
+      </div>
 
       {showPicker && (
-        <div style={{marginTop: "8px"}}>
-          <EmojiPicker onEmojiClick={handleIconClick}/>
+        <div style={{ marginTop: "8px" }}>
+          <EmojiPicker onEmojiClick={handleIconClick} />
         </div>
       )}
-       </div>
 
-       <div style={buttonGroupStyle}>
+      <div style={buttonGroupStyle}>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={isSubmitting}
+          fullWidth
+        >
+          {isSubmitting ? "Submitting..." : submitLabel}
+        </Button>
+        {onCancel && (
           <Button
-            type="submit"
-            variant="primary"
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
             disabled={isSubmitting}
-            fullWidth
           >
-            {isSubmitting ? "Submitting..." : submitLabel}
+            Cancel
           </Button>
-          {onCancel && (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-          )}
-        </div>
+        )}
+      </div>
     </form>
   );
 }
