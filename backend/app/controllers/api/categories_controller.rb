@@ -10,7 +10,7 @@ class Api::CategoriesController < ApplicationController
     if category.save
       render json: format_category(category), status: :created
     else
-      render json: {errors: category.errors.full_messages}, status: :unprocessable_entity
+      render json: { errors: category.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -20,12 +20,18 @@ class Api::CategoriesController < ApplicationController
     if category.update(category_params)
       render json: format_category(category)
     else
-      render json: {errors: category.errors.full_messages}, status: :unprocessable_entity
+      render json: { errors: category.errors.full_messages }, status: :unprocessable_content
     end
   end
 
   def destroy
     category = Category.find(params[:id])
+
+    if category.expenses.any?
+      render json: { error: "Cannot delete category that is being used by expenses" }, status: :unprocessable_entity
+      return
+    end
+
     category.destroy
     head :no_content
   end
