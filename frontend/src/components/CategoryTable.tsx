@@ -1,75 +1,69 @@
-/**
- * Calendar expense table component
- */
-
 import React, { useState } from "react";
-import { Category, Expense, ExpenseFormData } from "../types";
-import { formatCurrency, formatDate } from "../utils/expenseUtils";
-import { getCategoryEmoji } from "../constants/categoryEmojis";
+import { Category, CategoryFormData } from "../types";
 import { COLORS } from "../constants/colors";
 import { Button, Modal, Pagination } from "../vibes";
-import { ExpenseForm } from "./ExpenseForm.tsx";
-import { deleteExpense, updateExpense } from "../services/api";
+import { deleteCategory, updateCategory } from "../services/api";
+import { CategoryFrom } from "./CategoryForm.tsx";
 
-interface CalendarExpenseTableProps {
-  expenses: Expense[];
+interface CategoryTableProps {
   categories: Category[];
-  onExpenseUpdated: () => void;
+  onCategoryUpdated: () => void;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 12;
 
-export function CalendarExpenseTable({
-  expenses,
+export function CategoryTable({
   categories,
-  onExpenseUpdated,
-}: CalendarExpenseTableProps) {
+  onCategoryUpdated,
+}: CategoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(
+    null,
+  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentExpenses = expenses.slice(startIndex, endIndex);
+  const currentCategories = categories.slice(startIndex, endIndex);
 
-  const getCategoryIcon = (categoryName: string) => {
-    const match = categories.find((c) => c.name === categoryName);
-    return match?.icon ?? "📊";
-  };
-
-  const handleEdit = (expense: Expense) => {
-    setEditingExpense(expense);
+  const handleEdit = (category: Category) => {
+    setEditingCategory(category);
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = (expense: Expense) => {
-    setDeletingExpense(expense);
+  const handleDelete = (category: Category) => {
+    setDeletingCategory(category);
     setIsDeleteModalOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (!deletingExpense) return;
+    if (!deletingCategory) return;
+
+    if (deletingCategory.count > 0) {
+      alert("Failed to delete category");
+      return;
+    }
     try {
-      await deleteExpense(deletingExpense.id);
+      await deleteCategory(deletingCategory.id);
       setIsDeleteModalOpen(false);
-      setDeletingExpense(null);
-      onExpenseUpdated();
+      setDeletingCategory(null);
+      onCategoryUpdated();
     } catch (error) {
-      console.error("Failed to delete expense:", error);
-      alert("Failed to delete expense");
+      console.error("Failed to delete category:", error);
+      alert("Failed to delete category");
     }
   };
 
-  const handleUpdate = async (data: ExpenseFormData) => {
-    if (!editingExpense) return;
+  const handleUpdate = async (data: CategoryFormData) => {
+    if (!editingCategory) return;
     try {
-      await updateExpense(editingExpense.id, data);
+      await updateCategory(editingCategory.id, data);
       setIsEditModalOpen(false);
-      setEditingExpense(null);
-      onExpenseUpdated();
+      setEditingCategory(null);
+      onCategoryUpdated();
     } catch (error) {
       console.error("Failed to update expense:", error);
       throw error;
@@ -114,11 +108,23 @@ export function CalendarExpenseTable({
     gap: "0.5rem",
   };
 
-  if (expenses.length === 0) {
+  const itemIconStyle: React.CSSProperties = {
+    fontSize: "28px",
+    width: "38px",
+    height: "38px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "white",
+    borderRadius: "10px",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+  };
+
+  if (categories.length === 0) {
     return (
       <div style={tableStyle}>
         <div style={emptyStyle}>
-          No expenses found. Add your first expense to get started!
+          No Categories found. Add your first expense to get started!
         </div>
       </div>
     );
@@ -129,46 +135,39 @@ export function CalendarExpenseTable({
       <table style={tableStyle}>
         <thead style={theadStyle}>
           <tr>
-            <th style={thStyle}>Date</th>
-            <th style={thStyle}>Description</th>
-            <th style={thStyle}>Category</th>
-            <th style={thStyle}>Amount</th>
+            <th style={thStyle}>Category Name</th>
+            <th style={thStyle}>Category Icon</th>
+            <th style={thStyle}>Used By</th>
             <th style={{ ...thStyle, textAlign: "center" }}>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {currentExpenses.map((expense) => (
-            <tr key={expense.id}>
-              <td style={tdStyle}>{formatDate(new Date(expense.date))}</td>
-              <td style={tdStyle}>{expense.description}</td>
+          {currentCategories.map((category) => (
+            <tr key={category.id}>
+              <td style={tdStyle}>{category.name}</td>
               <td style={tdStyle}>
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <span>{getCategoryIcon(expense.category)}</span>
-                  <span>{expense.category}</span>
-                </span>
+                <span style={itemIconStyle}>{category.icon}</span>
               </td>
-              <td style={{ ...tdStyle, textAlign: "left", fontWeight: 600 }}>
-                {formatCurrency(expense.amount)}
-              </td>
+              <td style={tdStyle}>{category.count}</td>
               <td style={{ ...tdStyle, textAlign: "center" }}>
                 <div style={actionButtonsStyle}>
                   <Button
                     variant="secondary"
                     size="small"
-                    onClick={() => handleEdit(expense)}
+                    onClick={() => handleEdit(category)}
                   >
                     Edit
                   </Button>
                   <Button
                     variant="danger"
                     size="small"
-                    onClick={() => handleDelete(expense)}
+                    onClick={() => handleDelete(category)}
+                    disabled={(category?.count ?? 0) > 0}
+                    title={
+                      (category?.count ?? 0) > 0
+                        ? `Cannot be deleted, used by ${category?.count} expense(s)`
+                        : undefined
+                    }
                   >
                     Delete
                   </Button>
@@ -189,24 +188,22 @@ export function CalendarExpenseTable({
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);
-          setEditingExpense(null);
+          setEditingCategory(null);
         }}
         title="Edit Expense"
       >
-        {editingExpense && (
-          <ExpenseForm
+        {editingCategory && (
+          <CategoryFrom
             initialData={{
-              amount: editingExpense.amount.toString(),
-              description: editingExpense.description,
-              category: editingExpense.category,
-              date: formatDate(new Date(editingExpense.date)),
+              name: editingCategory.name.toString(),
+              icon: editingCategory.icon,
             }}
             onSubmit={handleUpdate}
             onCancel={() => {
               setIsEditModalOpen(false);
-              setEditingExpense(null);
+              setEditingCategory(null);
             }}
-            submitLabel="Update Expense"
+            submitLabel="Update Category"
           />
         )}
       </Modal>
@@ -215,18 +212,27 @@ export function CalendarExpenseTable({
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
-          setDeletingExpense(null);
+          setDeletingCategory(null);
         }}
         title="Delete Expense"
       >
-        <div style={{ padding: "1rem 0" }}>
-          <p style={{ marginBottom: "1.5rem", color: COLORS.text.primary }}>
-            Are you sure you want to delete this expense?
+        <div>
+          <p style={{ color: COLORS.text.primary }}>
+            Are you sure you want to delete this category?
           </p>
-          {deletingExpense && (
-            <p style={{ marginBottom: "1.5rem", color: COLORS.text.secondary }}>
-              <strong>{deletingExpense.description}</strong> -{" "}
-              {formatCurrency(deletingExpense.amount)}
+          {deletingCategory && (
+            <p
+              style={{
+                marginBottom: "1.5rem",
+                color: COLORS.text.secondary,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <span style={itemIconStyle}>{deletingCategory.icon}</span>
+              <strong style={{ marginLeft: "0.5rem" }}>
+                {deletingCategory.name}
+              </strong>
             </p>
           )}
           <div
@@ -240,7 +246,7 @@ export function CalendarExpenseTable({
               variant="secondary"
               onClick={() => {
                 setIsDeleteModalOpen(false);
-                setDeletingExpense(null);
+                setDeletingCategory(null);
               }}
             >
               Cancel
