@@ -21,7 +21,7 @@ class Api::ExpensesController < ApplicationController
     if expense.save
       render json: format_expense(expense), status: :created
     else
-      render json: { errors: expense.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: expense.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -29,9 +29,9 @@ class Api::ExpensesController < ApplicationController
     expense = Expense.find(params[:id])
 
     if expense.update(expense_params)
-      render json: format_expense(expense)
+      render json: format_expense(expense), status: :ok
     else
-      render json: { errors: expense.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: expense.errors.full_messages }, status: :unprocessable_content
     end
   end
 
